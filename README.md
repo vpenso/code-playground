@@ -1,19 +1,15 @@
 # Rust
 
-Install with [`rustup`](tools/rustup.md)...
+Install with [`rustup`](doc/tools/rustup.md)...
 
-* ...build a binary with [`rustc`](tools/rustc.md)
-* ...build a project with [`cargo`](tools/cargo.md`)
-
-Install Microsoft Visual Studio  
-<https://code.visualstudio.com/docs/setup/linux>
-
-* Install the rust-analyzer extension
+* ...build a binary with [`rustc`](doc/tools/rustc.md)
+* ...build a project with [`cargo`](doc/tools/cargo.md`)
 
 Language concepts...
 
-* [variables](variables.md) & [ownership](ownership.md)
-* [collections](collections.md) (including strings)
+* [variables](doc/variables.md) & [ownership](doc/ownership.md)
+* [collections](doc/collections.md) (including strings)
+* `Option<T>`, `Result<T,Err>`, `unwrap()` and `expect()` examples in [src/option_and_result](src/option_and_result)
 
 ## References
 
