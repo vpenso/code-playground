@@ -9,7 +9,7 @@ Language concepts...
 
 * [variables](doc/variables.md) & [ownership](doc/ownership.md)
 * [collections](doc/collections.md) (including strings)
-* `Option<T>`, `Result<T,Err>`, `unwrap()` and `expect()` examples in [src/option_and_result](src/option_and_result)
+* `Option<T>`, `Result<T,Err>`, `unwrap()` and `expect()` examples in [option_and_result](src/option_and_result)
 
 ## References
 
