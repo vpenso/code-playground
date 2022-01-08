@@ -3,7 +3,7 @@
 Install with [`rustup`](doc/tools/rustup.md)...
 
 * ...build a binary with [`rustc`](doc/tools/rustc.md)
-* ...build a project with [`cargo`](doc/tools/cargo.md`)
+* ...build a project with [`cargo`](doc/tools/cargo.md)
 
 Language concepts...
 
