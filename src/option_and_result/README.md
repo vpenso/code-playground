@@ -34,7 +34,7 @@ pub enum Result<T, E> {
 }
 ```
 
-# Unwrap, Expect and ? Operator
+## Unwrap, Expect and ? Operator
 
 Helper methods during development...
 
@@ -65,9 +65,6 @@ Combinator functions
 * `and_then(c)` calls a closure if `Some(t)` or `Ok(T)`
 * `or_else(c)` call a closure on `None` or `Err(E)`
 * `then(c)` call a closure regardless of the type
-* `map`
-* `fold`
-* `for_each`
 
 ## References
 
