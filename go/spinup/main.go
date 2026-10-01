@@ -7,38 +7,51 @@ import (
 
 const tick = 100 * time.Millisecond
 
-var (
-	moonFrames = []string{"🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"}
-	clockFrames = []string{"🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"}
-)
-
-func main() {
-	moon := spinner(moonFrames, 10*tick)
-	clock := spinner(clockFrames, tick)
-	render(moon, clock)
+type update struct {
+	line int
+	frame string
 }
 
-func render(moonFrames, clockFrames <-chan string) {
-	var moonFrame, clockFrame string
-	for {
-		select {
-		case moonFrame = <-moonFrames:
-		case clockFrame = <-clockFrames:
-	        }
-		fmt.Printf("\r%s %s", moonFrame, clockFrame)
+type animation struct {
+	name string
+	frames []string
+	period time.Duration
+}
+
+func main() {
+	animations := []animation{
+		{name: "moon", period: 10 * tick, frames: []string{"🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"}},
+		{name: "clock", period: tick, frames: []string{"🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"}},
+		{name: "dots", period: tick / 2, frames: []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}},
+	}
+
+	updates := make(chan update)
+	for line, a := range animations {
+		go spin(line, a, updates)
+	}
+	render(animations, updates)
+}
+
+func spin(line int, a animation, out chan<- update) {
+	ticker := time.NewTicker(a.period)
+	defer ticker.Stop()
+	for i := 0; ; i++ {
+		out <- update{ line: line, frame: a.frames[i%len(a.frames)] }
+		<- ticker.C
 	}
 }
 
-func spinner(frames []string, period time.Duration) <-chan string {
-	out := make(chan string)
-	go func() {
-		ticker := time.NewTicker(period)
-		defer ticker.Stop()
-		for i := 0; ; i++ {
-			out <- frames[i%len(frames)]
-			<- ticker.C
+func render(animations []animation, updates <-chan update) {
+	current := make([]string, len(animations))
+	for range animations {
+		fmt.Println()
+	}
+	for u := range updates {
+		current[u.line] = u.frame
+		fmt.Printf("\x1b[%dA", len(animations))
+		for line, a := range animations {
+			fmt.Printf("\x1b[2K%s %s\n", current[line], a.name)
 		}
-	}()
-	return out
+	}
 }
 
