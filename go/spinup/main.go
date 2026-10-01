@@ -7,14 +7,15 @@ import (
 
 const tick = 100 * time.Millisecond
 
+var (
+	moonFrames = []string{"🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"}
+	clockFrames = []string{"🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"}
+)
+
 func main() {
-	moonFrames := make(chan string)
-	clockFrames := make(chan string)
-
-	go moon(moonFrames)
-	go clock(clockFrames)
-
-	render(moonFrames, clockFrames)
+	moon := spinner(moonFrames, 10*tick)
+	clock := spinner(clockFrames, tick)
+	render(moon, clock)
 }
 
 func render(moonFrames, clockFrames <-chan string) {
@@ -28,22 +29,16 @@ func render(moonFrames, clockFrames <-chan string) {
 	}
 }
 
-func moon(out chan<- string) {
-	frames := []string{"🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"}
-	for {
-		for _, frame := range frames {
-			out <- frame
-			time.Sleep(10 * tick)
+func spinner(frames []string, period time.Duration) <-chan string {
+	out := make(chan string)
+	go func() {
+		ticker := time.NewTicker(period)
+		defer ticker.Stop()
+		for i := 0; ; i++ {
+			out <- frames[i%len(frames)]
+			<- ticker.C
 		}
-	}
+	}()
+	return out
 }
 
-func clock(out chan<- string) {
-	frames := []string{"🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"}
-	for {
-		for _, frame := range frames {
-			out <- frame
-			time.Sleep(tick)
-		}
-	}
-}
