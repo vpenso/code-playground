@@ -8,30 +8,41 @@ import (
 const tick = 100 * time.Millisecond
 
 func main() {
-	frames := make(chan string)
-	go moon(frames, 1)
-	for frame := range frames {
-		fmt.Printf("\r%s", frame)
-	}
-	fmt.Println()
+	moonFrames := make(chan string)
+	clockFrames := make(chan string)
+
+	go moon(moonFrames)
+	go clock(clockFrames)
+
+	render(moonFrames, clockFrames)
 }
 
-func moon(out chan<- string, rounds int) {
+func render(moonFrames, clockFrames <-chan string) {
+	var moonFrame, clockFrame string
+	for {
+		select {
+		case moonFrame = <-moonFrames:
+		case clockFrame = <-clockFrames:
+	        }
+		fmt.Printf("\r%s %s", moonFrame, clockFrame)
+	}
+}
+
+func moon(out chan<- string) {
 	frames := []string{"🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"}
-	for range rounds {
+	for {
 		for _, frame := range frames {
 			out <- frame
-			time.Sleep(tick)
+			time.Sleep(10 * tick)
 		}
 	}
-	close(out)
 }
 
-func clock(rounds int) {
+func clock(out chan<- string) {
 	frames := []string{"🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"}
-	for range rounds{
+	for {
 		for _, frame := range frames {
-			fmt.Printf("\r%s", frame)
+			out <- frame
 			time.Sleep(tick)
 		}
 	}
