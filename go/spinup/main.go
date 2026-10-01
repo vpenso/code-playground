@@ -8,16 +8,28 @@ import (
 const tick = 100 * time.Millisecond
 
 func main() {
-	moon()
+	moon(2)
+	clock(2)
+	fmt.Println()
 }
 
-func moon() {
+func moon(rounds int) {
 	frames := []string{"🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"}
-	for { //endless loop
+	for range rounds {
 		for _, frame := range frames {
 			fmt.Printf("\r%s", frame)
 			time.Sleep(tick)
 		}
 
+	}
+}
+
+func clock(rounds int) {
+	frames := []string{"🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"}
+	for range rounds{
+		for _, frame := range frames {
+			fmt.Printf("\r%s", frame)
+			time.Sleep(tick)
+		}
 	}
 }
