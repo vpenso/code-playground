@@ -8,7 +8,7 @@ import (
 const tick = 100 * time.Millisecond
 
 func main() {
-	moon(2)
+	go moon(3)
 	clock(2)
 	fmt.Println()
 }
