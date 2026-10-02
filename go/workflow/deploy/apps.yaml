@@ -1,0 +1,54 @@
+# Three small Deployments for spinup to wait on. They run the same image and differ in how many
+# replicas they want and how long a new Pod must stay ready before it counts, so that the three
+# rollouts finish at visibly different times.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  minReadySeconds: 5
+  selector:
+    matchLabels: {app: web}
+  template:
+    metadata:
+      labels: {app: web}
+    spec:
+      containers:
+        - name: web
+          image: docker.io/library/nginx:alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 2
+  minReadySeconds: 15
+  selector:
+    matchLabels: {app: api}
+  template:
+    metadata:
+      labels: {app: api}
+    spec:
+      containers:
+        - name: api
+          image: docker.io/library/nginx:alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 4
+  minReadySeconds: 2
+  selector:
+    matchLabels: {app: worker}
+  template:
+    metadata:
+      labels: {app: worker}
+    spec:
+      containers:
+        - name: worker
+          image: docker.io/library/nginx:alpine
+

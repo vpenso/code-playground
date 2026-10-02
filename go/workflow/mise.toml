@@ -1,0 +1,12 @@
+# The Go toolchain, pinned to the minor raven's own tooling is built with. The patch floats, because
+# patches are fixes you always want.
+[tools]
+go = "1.26"
+# The cluster spinup creates, and the client it drives it with. The same pins as the Kubernetes
+# tutorial, so both can share a machine.
+kind = "0.32"
+kubectl = "1.36"
+
+[env]
+# kind talks to Docker unless told otherwise.
+KIND_EXPERIMENTAL_PROVIDER = "podman"

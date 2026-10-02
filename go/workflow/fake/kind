@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# A stand-in for kind, for working on the display without waiting for a real cluster each time.
+# Put this directory first on PATH to use it:  PATH="$PWD/fake:$PATH" go run .
+set -euo pipefail
+
+# Sleep in short naps. bash only acts on a signal between two commands, so one long sleep would
+# make this script deaf to an interrupt for its whole length.
+nap() {
+  local tenths="$1" n
+  for ((n = 0; n < tenths; n++)); do sleep 0.1; done
+}
+
+case "${1:-} ${2:-}" in
+"create cluster")
+  echo 'Creating cluster "spinup" ...' >&2
+  for phase in "Ensuring node image" "Preparing nodes" "Writing configuration" \
+    "Starting control-plane" "Installing CNI" "Installing StorageClass"; do
+    echo " • $phase ..." >&2
+    nap 8
+    echo " ✓ $phase" >&2
+  done
+  ;;
+"delete cluster")
+  echo 'Deleting cluster "spinup" ...' >&2
+  nap 10
+  ;;
+*)
+  echo "fake kind: no such command: $*" >&2
+  exit 2
+  ;;
+esac
+

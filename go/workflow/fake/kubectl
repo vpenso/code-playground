@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# A stand-in for kubectl that knows the two commands spinup runs. Set FAKE_BROKEN to the name of a
+# deployment to make its rollout fail:  FAKE_BROKEN=worker PATH="$PWD/fake:$PATH" go run .
+set -euo pipefail
+
+# Sleep in short naps. bash only acts on a signal between two commands, so one long sleep would
+# make this script deaf to an interrupt for its whole length.
+nap() {
+  local tenths="$1" n
+  for ((n = 0; n < tenths; n++)); do sleep 0.1; done
+}
+
+# There is only one pretend cluster, so the context is accepted and ignored.
+if [[ "${1:-}" == "--context" ]]; then
+  shift 2
+fi
+
+case "${1:-}" in
+apply)
+  for name in web api worker; do
+    echo "deployment.apps/$name created"
+    nap 3
+  done
+  ;;
+rollout)
+  name="${3#deployment/}"
+  case "$name" in
+  web) replicas=3 pace=7 ;;
+  api) replicas=2 pace=14 ;;
+  *) replicas=4 pace=5 ;;
+  esac
+  for ((ready = 0; ready < replicas; ready++)); do
+    echo "Waiting for deployment \"$name\" rollout to finish: $ready of $replicas updated replicas are available..."
+    nap "$pace"
+    if [[ "$name" == "${FAKE_BROKEN:-}" && "$ready" -eq 1 ]]; then
+      echo "error: deployment \"$name\" exceeded its progress deadline" >&2
+      exit 1
+    fi
+  done
+  echo "deployment \"$name\" successfully rolled out"
+  ;;
+*)
+  echo "fake kubectl: no such command: $*" >&2
+  exit 2
+  ;;
+esac
+
