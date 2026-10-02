@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 	"os"
@@ -28,45 +29,42 @@ func main() {
 		{name: "dots", period: tick / 2, frames: []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}},
 	}
 
-	done := make(chan struct{})
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-	go func() {
-		<-signals
-		close(done)
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	updates := make(chan update)
 
 	var spinners sync.WaitGroup
 	for line, a := range animations {
-		spinners.Go(func() { spin(line, a, updates, done) })
+		spinners.Go(func() { spin(ctx, line, a, updates) })
 	}
 
-	render(animations, updates, done)
+	render(ctx, animations, updates)
 
 	spinners.Wait()
 }
 
-func spin(line int, a animation, out chan<- update, done <-chan struct{}) {
+func spin(ctx context.Context, line int, a animation, out chan<- update) {
 	ticker := time.NewTicker(a.period)
 	defer ticker.Stop()
 	defer fmt.Fprintln(os.Stderr, a.name, "stopped")
 	for i := 0; ; i++ {
 		select {
 		case out <- update{line: line, frame: a.frames[i%len(a.frames)]}:
-		case <-done:
+		case <-ctx.Done():
 			return
 		}
 		select {
 		case <-ticker.C:
-		case <-done:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func render(animations []animation, updates <-chan update, done <-chan struct{}) {
+func render(ctx context.Context, animations []animation, updates <-chan update) {
 	fmt.Print("\x1b[?25l")
 	defer fmt.Print("\x1b[?25h")
 
@@ -82,7 +80,7 @@ func render(animations []animation, updates <-chan update, done <-chan struct{})
 			for line, a := range animations {
 				fmt.Printf("\x1b[2K%s %s\n", current[line], a.name)
 			}
-		case <-done:
+		case <-ctx.Done():
 			return
 		}
 	}
